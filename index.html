@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#faf6ed">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <title>十年后的我 · Loomy</title>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    :root{
+      --bg:#faf6ed;--bg-card:#fffdf7;--ink:#2a2826;--ink-s:#5a5650;--ink-l:#8a857d;
+      --line:#e8e0d0;--accent:#c8704a;--cin:#c8463a;--gold:#b8935a;
+    }
+    html,body{height:100%;overflow-x:hidden}
+    body{
+      font-family:"Noto Serif SC","Songti SC","STSong","PingFang SC",system-ui,serif;
+      background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;
+    }
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+      background:radial-gradient(at 30% 20%,rgba(200,112,74,.04),transparent 60%),
+                 radial-gradient(at 70% 80%,rgba(184,147,90,.04),transparent 60%);}
+    button{font-family:inherit;cursor:pointer}
+    input,textarea{font-family:inherit;border:none;outline:none;resize:none;font-size:15px}
+    .app{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:44px 24px 64px;min-height:100vh}
+
+    /* — Header — */
+    .header{text-align:center;margin-bottom:32px}
+    .header-brand{font-size:10px;letter-spacing:4px;color:var(--ink-l);opacity:.5;margin-bottom:12px}
+    .header h1{font-family:"STKaiti","KaiTi",serif;font-size:36px;font-weight:700;letter-spacing:6px;color:var(--ink)}
+    .header-sub{font-size:13px;color:var(--ink-s);letter-spacing:2px;margin-top:6px}
+
+    /* — Steps — */
+    .step{display:none;animation:fadeIn .4s ease}
+    .step.active{display:block}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+    /* — Form — */
+    .form{display:flex;flex-direction:column;gap:16px;margin-bottom:24px}
+    .form-row{display:flex;gap:12px}
+    .form-row>*{flex:1}
+    .field{display:flex;flex-direction:column;gap:4px}
+    .field-label{font-size:11px;color:var(--ink-l);letter-spacing:2px}
+    .field input,.field textarea{
+      background:var(--bg-card);border:1px solid var(--line);border-radius:8px;
+      padding:12px 14px;color:var(--ink);transition:border-color .2s;
+    }
+    .field input:focus,.field textarea:focus{border-color:var(--accent)}
+    .field textarea{height:80px}
+
+    /* — Options — */
+    .opts{margin-bottom:24px}
+    .opts-label{font-size:11px;color:var(--ink-l);letter-spacing:2px;margin-bottom:8px}
+    .opt-row{display:flex;gap:8px;flex-wrap:wrap}
+    .opt{
+      font-size:13px;letter-spacing:1px;padding:10px 18px;background:var(--bg-card);
+      border:1px solid var(--line);border-radius:999px;color:var(--ink-s);
+      cursor:pointer;transition:all .2s;touch-action:manipulation;
+    }
+    .opt:hover{border-color:var(--ink-s)}
+    .opt.sel{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+    /* — Generate — */
+    .gen-btn{
+      width:100%;font-size:15px;letter-spacing:4px;padding:18px;
+      background:var(--ink);color:var(--bg);border:none;border-radius:999px;
+      cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.12);
+      transition:all .25s;font-weight:500;touch-action:manipulation;
+    }
+    .gen-btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(0,0,0,.18)}
+    .gen-btn:active{transform:translateY(0)}
+    .gen-btn:disabled{opacity:.4;cursor:wait}
+
+    /* — Letter Card — */
+    .letter{display:none;margin-top:32px}
+    .letter.active{display:block;animation:fadeIn .5s ease}
+
+    .letter-paper{
+      background:var(--bg-card);border-radius:8px;padding:32px 28px 28px;position:relative;
+      border:1px solid var(--line);box-shadow:0 8px 24px rgba(40,30,20,.08);
+    }
+    .letter-paper::before{
+      content:'';position:absolute;top:16px;left:28px;right:28px;height:1px;
+      background:linear-gradient(to right,transparent,var(--accent) 20%,var(--accent) 80%,transparent);
+    }
+    .letter-badge{
+      display:inline-block;font-size:10px;letter-spacing:2px;padding:3px 10px;
+      background:var(--accent);color:var(--bg);border-radius:3px;margin-bottom:20px;
+    }
+    .letter-body{
+      font-family:"STKaiti","KaiTi",serif;
+      font-size:17px;line-height:2;color:var(--ink);white-space:pre-wrap;
+    }
+    .letter-stamp{
+      position:absolute;bottom:24px;right:24px;
+      width:48px;height:48px;background:var(--cin);color:var(--bg);
+      border-radius:4px;display:flex;align-items:center;justify-content:center;
+      font-size:10px;font-weight:700;line-height:1.2;text-align:center;
+      transform:rotate(-6deg);
+      box-shadow:0 2px 6px rgba(200,70,58,.3),inset 0 0 0 1px rgba(255,255,255,.2);
+      font-family:"STKaiti","KaiTi",serif;
+    }
+
+    /* — Actions — */
+    .actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+    .action{
+      flex:1;min-width:80px;font-size:13px;letter-spacing:2px;padding:12px 16px;
+      background:transparent;border:1px solid var(--ink-s);color:var(--ink);
+      border-radius:999px;cursor:pointer;transition:all .2s;touch-action:manipulation;text-align:center;
+    }
+    .action.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+    .action:hover{transform:translateY(-1px)}
+
+    /* — History — */
+    .history{margin-top:32px;padding-top:24px;border-top:1px dashed var(--line)}
+    .history-title{font-size:11px;color:var(--ink-l);letter-spacing:3px;text-align:center;margin-bottom:12px}
+    .history-list{display:flex;flex-direction:column;gap:6px}
+    .hist-item{
+      font-size:12px;color:var(--ink-s);padding:8px 12px;background:rgba(255,255,255,.4);
+      border-radius:6px;cursor:pointer;border-left:2px solid var(--accent);
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+      transition:background .2s;
+    }
+    .hist-item:hover{background:rgba(255,255,255,.7)}
+
+    .toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:var(--ink);
+      color:var(--bg);padding:10px 24px;border-radius:999px;font-size:13px;
+      letter-spacing:2px;opacity:0;pointer-events:none;z-index:200;transition:opacity .3s;}
+    .toast.show{opacity:1}
+
+    canvas{display:none}
+    .footer{margin-top:36px;text-align:center;font-size:10px;color:var(--ink-l);opacity:.5;letter-spacing:2px}
+
+    @media(min-width:600px){.letter-paper{padding:40px 36px 36px}.letter-body{font-size:18px}}
+    @media(max-width:380px){.app{padding:36px 16px 52px}.header h1{font-size:30px}.letter-paper{padding:24px 20px 22px}.letter-body{font-size:15px}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <div class="header-brand">L O O M Y</div>
+    <h1>十年后的我</h1>
+    <div class="header-sub">填几个小问题 · 让未来的你回一封信</div>
+  </header>
+
+  <!-- Step 1: Form -->
+  <div class="step active" id="step1">
+    <div class="form">
+      <div class="form-row">
+        <div class="field"><div class="field-label">年龄</div><input type="number" placeholder="25" min="10" max="80" id="age"></div>
+        <div class="field"><div class="field-label">职业 / 身份</div><input type="text" placeholder="程序员 · 学生 · 自由职业…" id="occupation"></div>
+      </div>
+      <div class="field"><div class="field-label">最近的一件困扰</div><textarea placeholder="比如：不知该不该换工作…" id="worry"></textarea></div>
+      <div class="field"><div class="field-label">最近的一件小确幸</div><textarea placeholder="比如：每天下午 4 点喝一杯热拿铁…" id="joy"></textarea></div>
+    </div>
+
+    <div class="opts">
+      <div class="opts-label">时长</div>
+      <div class="opt-row" id="durationOpts">
+        <button class="opt sel" data-v="5">5 年</button>
+        <button class="opt" data-v="10">10 年</button>
+        <button class="opt" data-v="20">20 年</button>
+      </div>
+    </div>
+    <div class="opts">
+      <div class="opts-label">语气</div>
+      <div class="opt-row" id="toneOpts">
+        <button class="opt sel" data-v="gentle">温和</button>
+        <button class="opt" data-v="sharp">犀利</button>
+        <button class="opt" data-v="poetic">诗意</button>
+        <button class="opt" data-v="friend">朋友</button>
+      </div>
+    </div>
+
+    <button class="gen-btn" id="genBtn">✨ 让未来的你回信</button>
+  </div>
+
+  <!-- Step 2: Result -->
+  <div class="step" id="step2">
+    <div class="letter active" id="letter">
+      <div class="letter-paper" id="letterPaper">
+        <div class="letter-badge" id="letterBadge">✦ 10 年后 ✦</div>
+        <div class="letter-body" id="letterBody"></div>
+        <div class="letter-stamp">十年<br>之约</div>
+      </div>
+      <div class="actions">
+        <button class="action pri" id="copyBtn">复 制</button>
+        <button class="action" id="downBtn">下 载 卡 片</button>
+        <button class="action" id="againBtn">再 写 一 封</button>
+      </div>
+    </div>
+
+    <div class="history" id="historyWrap" style="display:none">
+      <div class="history-title">近 日 信 件</div>
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </div>
+
+  <footer class="footer">落款 · Loomy 灵感口袋</footer>
+</div>
+
+<canvas id="shareCanvas" width="810" height="1080"></canvas>
+<div class="toast" id="toast"></div>
+
+<script>
+// ——— DOM ———
+const step1=document.getElementById('step1'),step2=document.getElementById('step2');
+const genBtn=document.getElementById('genBtn'),copyBtn=document.getElementById('copyBtn');
+const downBtn=document.getElementById('downBtn'),againBtn=document.getElementById('againBtn');
+const letterBody=document.getElementById('letterBody'),letterBadge=document.getElementById('letterBadge');
+const letterPaper=document.getElementById('letterPaper'),letter=document.getElementById('letter');
+const toast=document.getElementById('toast'),canvas=document.getElementById('shareCanvas');
+const historyWrap=document.getElementById('historyWrap'),historyList=document.getElementById('historyList');
+
+// ——— State ———
+let duration=5,tone='gentle';
+let currentLetter='',currentBadge='',currentTone='',currentDuration=0;
+let stored = JSON.parse(localStorage.getItem('loomy-ten-later')||'[]');
+
+// ——— Option toggles ———
+document.querySelectorAll('.opt-row').forEach(row=>{
+  row.addEventListener('click',e=>{
+    const b=e.target.closest('.opt');if(!b)return;
+    row.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
+    b.classList.add('sel');
+    if(row.id==='durationOpts') duration=parseInt(b.dataset.v);
+    else tone=b.dataset.v;
+  });
+});
+
+// ——— Templates ———
+const pick=(arr)=>arr[Math.floor(Math.random()*arr.length)];
+
+const T={gentle:{},sharp:{},poetic:{},friend:{}};
+
+T.gentle.G=['亲爱的，最近还好吗？','展信佳。','你好啊，几年前的自己。'];
+T.gentle.I=(d,a,o)=>`我是 ${d} 年后的你。我已经 ${a+d} 岁了，还在做着和「${o||'你'}」相关的行业。这 ${d} 年里，有些事和你预期的一样，但更多的，是你完全没料到的。`;
+T.gentle.W=(w,d)=>`你当时为「${w||'一些事'}」而焦虑，我记得那种感觉。说实话，${d} 年后回头看，这件事确实值得认真对待——但它不会定义你的一生。`;
+T.gentle.J=(j,d)=>`谢谢你当时还给自己留了一点点快乐——「${j||'那些微小的瞬间'}」。你知道吗，就是这些不起眼的事，在后来最难的日子里，帮我撑了过来。继续做让你开心的事，哪怕它看起来「没用」。`;
+T.gentle.WS=['我想对你说的，只有一件事：对自己温柔一点。你太努力了，太认真了。偶尔松口气吧。','人生很长。那些你此刻看不见的答案，时间会替你慢慢展开。','记得：你不是你的焦虑。你是那个在焦虑中，依然在努力生活的你。'];
+T.gentle.C=['记得，无论什么时候，我都以你为骄傲。','此致，一个遥远的拥抱。','会好的。真的。'];
+
+T.sharp.G=['你好，我看到你了。','听着，我有话要说。','别找了，就是你。'];
+T.sharp.I=(d,a,o)=>`我是 ${d} 年后的你。${a+d} 岁了。先说结论：你担心的那些事，一半没有发生，一半比你想象的容易。而你以为「不重要」的那些事，反而成了关键。`;
+T.sharp.W=(w,d)=>`你正为「${w||'某件事'}」焦虑。告诉你实话：这件事的确重要。但花在焦虑上的时间太多，花在解决上的太少。${d} 年后你会明白——行动是最好的解药。`;
+T.sharp.J=(j,d)=>`你做对了一件事：「${j||'某个选择'}」。这种事多做。它们是你为数不多的清醒时刻。别用「忙」当借口挤掉它。`;
+T.sharp.WS=['总结：少内耗，多做事。你不知道的比你知道的多太多——但不重要。先把手里的事做好，路会自己出现。','没有人真的在看表演，人们都在看自己的台本。所以不必演。','快做决定。不做决定本身，就是一种决定。'];
+T.sharp.C=['别再浪费时间了。开始吧。','等你的好消息。','我说完了。']; 
+
+T.poetic.G=['你听见了吗？未来的风里，有此刻的回声。','此刻的你在读这封信，而未来的我在写它——我们隔着时间，共享同一个心跳。','月光照着此刻的我，也照着你。'];
+T.poetic.I=(d,a,o)=>`我是 ${d} 年后的你。${a+d} 岁了。${o?o+'——这个标签已经褪了色，你成了更完整的人':'身份变得不重要了，重要的是，你终于开始理解自己'}。`;
+T.poetic.W=(w,d)=>`你正为「${w||'某件事'}」而失眠。未来想告诉你：那些你以为的悬崖，其实是路走到了雾里。雾散了，路还在。`;
+T.poetic.J=(j,d)=>`「${j||'那个小小的快乐'}」——这是 ${d} 年后的我回头看时，看见的一道明亮的细线。谢谢你保留了它。`;
+T.poetic.WS=['这些年我学到的最重要的事：不是你走了多远，是你走的过程中，看到了什么。','此岸的灯火与彼岸的星火，终究是一条河的倒影。','时间不是流逝的，是生长在你身上的。'];
+T.poetic.C=['此岸的灯火，与彼岸的星火，终究是一条河的倒影。','我在未来等你。不带期待，只带确信。'];
+
+T.friend.G=['嘿，好久不见！','Yo，猜猜我是谁——对了，就是你，来自未来！','嗨！最近过得怎么样？'];
+T.friend.I=(d,a,o)=>`我是 ${d} 年后的你——${a+d} 岁了！先说个好玩的：${d} 年后的你${o?'还在搞和「'+o+'」相关的':'完全变了一个人'}。但有些事，真的一直没变。`;
+T.friend.W=(w,d)=>`哈哈，你现在是不是为了「${w||'一件事'}」抓狂？告诉你：${d} 年后你真的会拿这件事当笑话讲。不是因为它解决了，是因为后来的事让它显得那么小。`;
+T.friend.J=(j,d)=>`对了，你超喜欢「${j||'某件事'}」是吧？告诉你，${d} 年后你还在做这个。真爱是不会过期的。别停，继续保持。`;
+T.friend.WS=['记住：没有人真的在看你，大家都很忙。所以做你想做的呗。','别把「别人怎么想」当成真的——别人根本没在想你，他们都在想自己。','你就是你，挺好的。'];
+T.friend.C=['加油，别怂。等你过来。','好了不说了，未来见！','Peace out ✌️'];
+
+// ——— Generate ———
+function generate(){
+  const age=document.getElementById('age').value||'25';
+  const occupation=document.getElementById('occupation').value.trim();
+  const worry=document.getElementById('worry').value.trim();
+  const joy=document.getElementById('joy').value.trim();
+  const tmpl=T[tone]||T.gentle;
+  const a=parseInt(age);
+
+  const G=pick(tmpl.G);
+  const I=tmpl.I(duration,a,occupation);
+  const W=tmpl.W(worry||'最近的一些事',duration);
+  const J=tmpl.J(joy||'那些微小快乐',duration);
+  const WS=pick(tmpl.WS);
+  const C=pick(tmpl.C);
+
+  const now=new Date();
+  const sig=`—— ${duration} 年后的你\n    ${now.getFullYear()+duration}年 · ${tone==='friend'?'纯手打':'手书'}`;
+  const bdg=`✦ ${duration} 年后 ✦`;
+
+  return {text:`${G}\n\n${I}\n\n${W}\n\n${J}\n\n${WS}\n\n${C}\n\n${sig}`,badge:bdg};
+}
+
+// ——— Toast ———
+let tt;
+function t(msg){clearTimeout(tt);toast.textContent=msg;toast.classList.add('show');tt=setTimeout(()=>toast.classList.remove('show'),1800)}
+
+// ——— Show Result ———
+function showResult(){
+  const r=generate();
+  currentLetter=r.text;currentBadge=r.badge;currentTone=tone;currentDuration=duration;
+  letterBadge.textContent=r.badge;
+  letterBody.textContent=r.text;
+  step1.classList.remove('active');
+  step2.classList.add('active');
+  letter.classList.add('active');
+  document.getElementById('step2').scrollIntoView({behavior:'smooth'});
+
+  // Save
+  stored.unshift({text:r.text,badge:r.badge,tone,duration,time:Date.now()});
+  if(stored.length>5)stored=stored.slice(0,5);
+  localStorage.setItem('loomy-ten-later',JSON.stringify(stored));
+  renderHistory();
+}
+
+// ——— History ———
+function renderHistory(){
+  if(!stored.length){historyWrap.style.display='none';return}
+  historyWrap.style.display='block';
+  historyList.innerHTML=stored.map((s,i)=>`
+    <div class="hist-item" data-idx="${i}" title="点击重读">${s.badge} · ${s.text.slice(0,40)}…</div>
+  `).join('');
+}
+historyList.addEventListener('click',e=>{
+  const el=e.target.closest('.hist-item');if(!el)return;
+  const s=stored[parseInt(el.dataset.idx)];
+  currentLetter=s.text;currentBadge=s.badge;currentTone=s.tone;currentDuration=s.duration;
+  letterBadge.textContent=s.badge;
+  letterBody.textContent=s.text;
+  step1.classList.remove('active');step2.classList.add('active');
+  letter.classList.add('active');
+  document.getElementById('step2').scrollIntoView({behavior:'smooth'});
+});
+
+// ——— Events ———
+genBtn.addEventListener('click',showResult);
+againBtn.addEventListener('click',()=>{step2.classList.remove('active');step1.classList.add('active');letter.classList.remove('active');window.scrollTo({top:0,behavior:'smooth'})});
+
+copyBtn.addEventListener('click',()=>{
+  const txt=`${currentBadge}\n\n${currentLetter}\n\n—— 来自 Loomy 十年后的我`;
+  if(navigator.clipboard?.writeText){navigator.clipboard.writeText(txt).then(()=>t('已复制 ✓'))}
+  else{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);t('已复制 ✓')}
+});
+
+// ——— Download Card ———
+downBtn.addEventListener('click',()=>{
+  const ctx=canvas.getContext('2d');const W=810,H=1080;
+
+  // BG
+  const bg=ctx.createLinearGradient(0,0,W,H);bg.addColorStop(0,'#faf6ed');bg.addColorStop(1,'#f2ebd8');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+  // Accent line
+  ctx.strokeStyle='#c8704a';ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(80,80);ctx.lineTo(W-80,80);ctx.stroke();
+
+  // Badge
+  ctx.fillStyle='#8a857d';ctx.font='300 18px "PingFang SC",sans-serif';
+  ctx.textAlign='center';ctx.fillText('L O O M Y',W/2,130);
+  ctx.textAlign='left';
+
+  const bdgW=currentBadge.length*18+30;
+  ctx.fillStyle='#c8704a';const bx=80,by=160;
+  ctx.beginPath();ctx.roundRect(bx,by,bdgW,32,4);ctx.fill();
+  ctx.fillStyle='#faf6ed';ctx.font='400 17px "PingFang SC",sans-serif';
+  ctx.fillText(currentBadge,bx+15,by+22);
+
+  // Letter
+  ctx.fillStyle='#2a2826';ctx.font='400 22px "STKaiti","KaiTi",serif';
+  const lines=currentLetter.split('\n');let y=240;
+  lines.forEach(line=>{
+    if(line.trim()){
+      ctx.fillText(line,80,y);
+      y+=42;
+    }else{y+=20}
+  });
+
+  // Stamp
+  const sx=W-130,sy=160;
+  ctx.fillStyle='#c8463a';
+  ctx.beginPath();ctx.moveTo(sx+6,sy);ctx.lineTo(sx+54,sy);ctx.lineTo(sx+60,sy+6);
+  ctx.lineTo(sx+60,sy+54);ctx.lineTo(sx+54,sy+60);ctx.lineTo(sx+6,sy+60);
+  ctx.lineTo(sx,sy+54);ctx.lineTo(sx,sy+6);ctx.closePath();ctx.fill();
+  ctx.save();ctx.translate(sx+30,sy+30);ctx.rotate(-6*Math.PI/180);
+  ctx.fillStyle='#faf6ed';ctx.font='700 14px "STKaiti","KaiTi",serif';ctx.textAlign='center';
+  ctx.fillText(currentDuration>10?'长信':(currentDuration+'年'),0,-6);
+  ctx.fillText('之约',0,14);ctx.restore();
+
+  // Footer
+  ctx.fillStyle='#8a857d';ctx.font='300 16px "PingFang SC",sans-serif';ctx.textAlign='center';
+  ctx.fillText('Loomy 灵感口袋 · 十年后的我',W/2,1060);
+
+  canvas.toBlob(b=>{
+    const u=URL.createObjectURL(b);const a=document.createElement('a');
+    a.href=u;a.download=`${currentDuration}年后的回信.png`;
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    URL.revokeObjectURL(u);t('卡片已保存 ✓');
+  },'image/png');
+});
+
+// Init
+renderHistory();
+</script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js')}</script>
+</body>
+</html>
